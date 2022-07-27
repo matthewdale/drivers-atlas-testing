@@ -1,0 +1,41 @@
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: example-mongodb-tls-50-v3
+spec:
+  members: 3
+  type: ReplicaSet
+  version: "5.0.8"
+  replicaSetHorizons:
+  - gateway: "example-mongodb-tls-50-0.gateway.staging.corp.mongodb.com:443"
+  - gateway: "example-mongodb-tls-50-1.gateway.staging.corp.mongodb.com:443"
+  - gateway: "example-mongodb-tls-50-2.gateway.staging.corp.mongodb.com:443"
+  security:
+    tls:
+      enabled: true
+      certificateKeySecretRef:
+        name: astrolabe-mongodb-tls
+      caConfigMapRef:
+        name: astrolabe-mongodb-ca-configmap
+    authentication:
+      modes: ["SCRAM"]
+  users:
+    - name: astrolabe
+      db: admin
+      passwordSecretRef:
+        name: astrolabe-mongodb-password
+      roles:
+        - name: clusterAdmin
+          db: admin
+        - name: userAdminAnyDatabase
+          db: admin
+      scramCredentialsSecretName: astrolabe-mongodb-scram
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+  statefulSet:
+    spec:
+      template:
+        metadata:
+          labels:
+            sidecar.istio.io/inject: "true"

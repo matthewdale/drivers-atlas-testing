@@ -1,0 +1,8 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: astrolabe-mongodb-ca-issuer
+spec:
+  ca:
+    secretName: astrolabe-mongodb-ca-keypair

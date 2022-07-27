@@ -66,6 +66,23 @@ functions:
         command: |
           astrolabevenv/${PYTHON_BIN_DIR}/pip install -e .
 
+  "install kubectl":
+    - command: subprocess.exec
+      type: setup
+      params:
+        working_dir: astrolabe-src
+        command: |
+          # Download kubectl v1.19.15.
+          curl -LO https://dl.k8s.io/release/v1.19.15/bin/linux/amd64/kubectl
+          chmod +x kubectl
+          # Copy the kubeconfig to the default location and replace the placeholders with the
+          # corresponding Evergreen secrets.
+          cp .evergreen/kanopy/kubeconfig ~/.kube/config
+          sed -i 's/USERNAME_PLACEHOLDER/${kanopy_username}/g' ~/.kube/config
+          sed -i 's/CLIENT_SECRET_PLACEHOLDER/${kanopy_client_secret}/g' ~/.kube/config
+          sed -i 's/ID_TOKEN_PLACEHOLDER/${kanopy_id_token}/g' ~/.kube/config
+          sed -i 's/REFRESH_TOKEN_PLACEHOLDER/${kanopy_refresh_token}/g' ~/.kube/config
+
   "install driver":
     # Clone driver source code into the 'astrolabe-src/<driver-repo-name>' directory.
     - command: subprocess.exec
@@ -128,6 +145,27 @@ functions:
         command: |
           astrolabevenv/${PYTHON_BIN_DIR}/astrolabe check-success
 
+  "run kanopy test":
+    # Create a MongoDB replicaset in Kanopy Staging.
+    - command: subprocess.exec
+      type: setup
+      params:
+        working_dir: astrolabe-src
+        env:
+          KUBECTL: "./kubectl"
+        command: |
+          .evergreen/kanopy/create.sh
+    # Run the Kanopy Test.
+    - command: subprocess.exec
+      type: test
+      params:
+        working_dir: astrolabe-src
+        env:
+          CONNECTION_STRING: "asdf" # TODO: What?
+        add_expansions_to_env: true
+        command: |
+          astrolabevenv/${PYTHON_BIN_DIR}/astrolabe spec-tests run-kanopy tests/${TEST_NAME}.yml -e integrations/${DRIVER_DIRNAME}/workload-executor
+
   "retrieve server logs":
     - command: subprocess.exec
       type: setup
@@ -181,6 +219,17 @@ functions:
         add_expansions_to_env: true
         command: |
           astrolabevenv/${PYTHON_BIN_DIR}/astrolabe spec-tests delete-cluster tests/${TEST_NAME}.yml
+
+  "stop kanopy cluster":
+    # Delete the cluster that was used to run the test.
+    - command: subprocess.exec
+      type: setup
+      params:
+        working_dir: astrolabe-src
+        env:
+          KUBECTL: "./kubectl"
+        command: |
+          .evergreen/kanopy/delete.sh
 
   "upload test results":
     # Evergreen fails tasks when the process exits with success but an xunit
@@ -249,6 +298,7 @@ functions:
 # Functions to run before the test.
 pre:
   - func: "install astrolabe"
+  - func: "install kubectl"
   - func: "install driver"
 
 # Functions to run after the test.

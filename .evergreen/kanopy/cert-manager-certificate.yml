@@ -1,0 +1,21 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: cert-manager-certificate
+spec:
+  secretName: astrolabe-mongodb-tls
+  issuerRef:
+    name: astrolabe-mongodb-ca-issuer
+    kind: Issuer
+  commonName: "example-mongodb-tls-50-v3-0"
+  dnsNames:
+  - "example-mongodb-tls-50-v3-0"
+  - "example-mongodb-tls-50-v3-1"
+  - "example-mongodb-tls-50-v3-2"
+  - "example-mongodb-tls-50-v3-0.example-mongodb-tls-50-v3-svc.drivers.svc.cluster.local"
+  - "example-mongodb-tls-50-v3-1.example-mongodb-tls-50-v3-svc.drivers.svc.cluster.local"
+  - "example-mongodb-tls-50-v3-2.example-mongodb-tls-50-v3-svc.drivers.svc.cluster.local"
+  - "example-mongodb-tls-50-0.gateway.staging.corp.mongodb.com"
+  - "example-mongodb-tls-50-1.gateway.staging.corp.mongodb.com"
+  - "example-mongodb-tls-50-2.gateway.staging.corp.mongodb.com"
