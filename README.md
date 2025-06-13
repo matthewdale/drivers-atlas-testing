@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository is no longer maintained. See [DRIVERS-3114](https://jira.mongodb.org/browse/DRIVERS-3114) for context.
+
 # astrolabe
 
 [![Documentation Status](https://readthedocs.org/projects/drivers-atlas-testing/badge/?version=latest)](http://drivers-atlas-testing.readthedocs.io/en/latest/?badge=latest)
